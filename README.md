@@ -15,6 +15,8 @@ The codebase is structured for production-minded research:
 - Defensive handling of NaN/Inf values before model training and backtesting.
 - Step-by-step logging for traceability and debugging.
 - Unit tests for core data, feature, model, and backtest modules.
+- MLflow experiment tracking for params/metrics/artifacts.
+- CI workflow for formatting checks and automated tests.
 
 ## Research Objective
 Given a daily universe of equities, estimate relative forward returns and monetize ranking quality via market-neutral portfolio construction.
@@ -35,13 +37,20 @@ Core question:
 
 3. Model prototyping
 - Use walk-forward `TimeSeriesSplit` on dates.
+- Apply research-grade split controls (`ValidationSpec`) including purge/embargo windows.
 - Train tree-based regressor (`RandomForestRegressor` by default; XGBoost optional).
 - Emit fully out-of-sample prediction table.
 
 4. Portfolio construction and evaluation
 - Long top quantile, short bottom quantile each day.
 - Equal-weight each side and enforce dollar neutrality.
-- Compute daily strategy returns and performance diagnostics.
+- Apply risk constraints (max absolute position size and gross leverage normalization).
+- Compute realistic daily net returns with transaction cost and slippage assumptions.
+- Compute performance diagnostics.
+
+5. Experiment tracking and artifacts
+- Log run parameters and performance metrics to MLflow.
+- Persist reusable chart artifacts for reporting and review.
 
 ## Repository Structure
 ```text
@@ -125,6 +134,8 @@ The model prototyping notebook now includes multiple resume-ready diagnostics:
 
 These plots are useful for discussing signal quality, risk profile, and implementation realism in interviews.
 
+- Concise KPI dashboard (performance + IC context in one figure).
+
 ### Results Snapshot
 
 #### Cumulative Return Curve
@@ -149,6 +160,13 @@ Small summary:
 Small summary:
 - Daily side counts are stable and consistent with deterministic quantile-based construction.
 - This confirms reproducible exposure mechanics (long/short/flat allocation process).
+
+#### Concise Dashboard
+![Concise Dashboard](docs/figures/concise_dashboard.png)
+
+Small summary:
+- Consolidates headline metrics with compact visual diagnostics for fast strategy review.
+- Designed as an interview-friendly and PM-friendly one-page summary artifact.
 
 ## Getting Started
 ### 1) Environment setup
@@ -190,6 +208,14 @@ Validation rules are enforced at startup (date ordering, positive horizon, valid
 - Positive-price and non-negative-volume guardrails where required.
 - Deterministic output schemas on empty-path execution.
 - Fold-aware walk-forward testing behavior and model-data validation.
+- Purged/embargoed validation controls for leakage reduction.
+- Position and leverage caps before return aggregation.
+- Turnover-aware net return computation using explicit cost assumptions.
+
+## MLOps and Reproducibility
+- Experiment tracking: MLflow logs run metadata, metrics, and chart artifacts.
+- CI/CD scaffold: GitHub Actions runs `black --check` and `pytest` on pushes/PRs.
+- Artifact persistence: notebook exports visuals to `docs/figures`.
 
 ## Testing Coverage
 Current tests validate:
@@ -201,11 +227,10 @@ Current tests validate:
 
 ## Limitations and Next Steps
 Potential upgrades:
-- Add transaction cost and slippage model.
-- Add turnover constraints and capacity analysis.
 - Add benchmark-relative diagnostics and factor exposure decomposition.
 - Replace simple equal-weighting with risk-targeted optimizer.
-- Add CI pipeline for tests, linting, and notebook smoke checks.
+- Add notebook smoke tests to CI for end-to-end regression checks.
+- Add capacity and market-impact model beyond fixed bps assumptions.
 
 ## License
 MIT

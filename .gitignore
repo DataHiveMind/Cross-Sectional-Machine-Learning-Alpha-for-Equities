@@ -1,0 +1,27 @@
+# Python caches and virtual environments
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Notebook and local editor artifacts
+.ipynb_checkpoints/
+
+# Local experiment tracking artifacts
+mlruns/
+notebooks/mlruns/
+notebooks/mlflow.db
+
+# Generated project artifacts
+docs/figures/
+data/raw/*.parquet
+data/processed/*.parquet
+
+# OS artifacts
+.DS_Store
+Thumbs.db
